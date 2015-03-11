@@ -274,9 +274,9 @@ void input_thread( void *arg) {
 		snprintf(G.message, sizeof(G.message), "][ paused output");
 		pthread_mutex_lock( &(G.mx_print) );
 
-		    fprintf( stderr, "\33[1;1H" );
+		//fprintf( stderr, "\33[1;1H" );
 		    dump_print( G.ws.ws_row, G.ws.ws_col, G.num_cards );
-		    fprintf( stderr, "\33[J" );
+		    //fprintf( stderr, "\33[J" );
 		    fflush(stderr);
 
 		pthread_mutex_unlock( &(G.mx_print) );
@@ -372,9 +372,9 @@ void input_thread( void *arg) {
 	if(G.do_exit == 0 && !G.do_pause) {
 	    pthread_mutex_lock( &(G.mx_print) );
 
-		fprintf( stderr, "\33[1;1H" );
+	    //fprintf( stderr, "\33[1;1H" );
 		dump_print( G.ws.ws_row, G.ws.ws_col, G.num_cards );
-		fprintf( stderr, "\33[J" );
+		//fprintf( stderr, "\33[J" );
 		fflush(stderr);
 
 	    pthread_mutex_unlock( &(G.mx_print) );
@@ -1538,6 +1538,12 @@ int dump_add_packet( unsigned char *h80211, int caplen, struct rx_info *ri, int 
     /* only update power if packets comes from the
      * client: either type == Mgmt and SA != BSSID,
      * or FromDS == 0 and ToDS == 1 */
+    
+    fprintf( stdout, "{'mac':'%02X:%02X:%02X:%02X:%02X:%02X', 'strength':%d}\n",
+			st_cur->stmac[0], st_cur->stmac[1],
+			st_cur->stmac[2], st_cur->stmac[3],
+	     st_cur->stmac[4], st_cur->stmac[5], ri->ri_power );
+    
 
     if( ( ( h80211[1] & 3 ) == 0 &&
             memcmp( h80211 + 10, bssid, 6 ) != 0 ) ||
@@ -2929,6 +2935,7 @@ static char *parse_timestamp(unsigned long long timestamp) {
 
 void dump_print( int ws_row, int ws_col, int if_num )
 {
+  return;
     time_t tt;
     struct tm *lt;
     int nlines, i, n, len;
@@ -4655,7 +4662,7 @@ void sighandler( int signum)
 
     if( signum == SIGWINCH )
     {
-        fprintf( stderr, "\33[2J" );
+      //fprintf( stderr, "\33[2J" );
         fflush( stdout );
     }
 }
@@ -4805,6 +4812,7 @@ void channel_hopper(struct wif *wi[], int if_num, int chan_count )
 
             ch = G.channels[ch_idx];
 
+	    //printf("setting channel to : %d\n", ch);
             if(wi_set_channel(wi[card], ch ) == 0 )
             {
                 G.channel[card] = ch;
@@ -4834,6 +4842,7 @@ void channel_hopper(struct wif *wi[], int if_num, int chan_count )
             first = 0;
         }
 
+	//printf("ch sleep : %d\n", G.hopfreq*1000);
         usleep( (G.hopfreq*1000) );
     }
 
@@ -5082,7 +5091,6 @@ int getchannels(const char *optarg)
 }
 
 /* parse a string, for example "1,2,3-7,11" */
-
 int getfrequencies(const char *optarg)
 {
     unsigned int i=0,freq_cur=0,freq_first=0,freq_last=0,freq_max=10000,freq_remain=0;
@@ -6349,7 +6357,7 @@ usage:
         waitpid( -1, NULL, WNOHANG );
     }
 
-    fprintf( stderr, "\33[?25l\33[2J\n" );
+    //fprintf( stderr, "\33[?25l\33[2J\n" );
 
     start_time = time( NULL );
     tt1        = time( NULL );
@@ -6575,14 +6583,17 @@ usage:
                 perror( "select failed" );
 
                 /* Restore terminal */
-                fprintf( stderr, "\33[?25h" );
+                //fprintf( stderr, "\33[?25h" );
                 fflush( stdout );
 
                 return( 1 );
             }
         }
         else
+	  {
+	    printf("Sleeping...");
             usleep(1);
+	  }
 
         gettimeofday( &tv2, NULL );
 
@@ -6614,9 +6625,9 @@ usage:
 	    if(!G.do_pause) {
 		pthread_mutex_lock( &(G.mx_print) );
 
-		    fprintf( stderr, "\33[1;1H" );
+		//fprintf( stderr, "\33[1;1H" );
 		    dump_print( G.ws.ws_row, G.ws.ws_col, G.num_cards );
-		    fprintf( stderr, "\33[J" );
+		    //fprintf( stderr, "\33[J" );
 		    fflush( stdout );
 
 		pthread_mutex_unlock( &(G.mx_print) );
@@ -6656,7 +6667,7 @@ usage:
                             printf("Can't reopen %s\n", ifnam);
 
                             /* Restore terminal */
-                            fprintf( stderr, "\33[?25h" );
+                            //fprintf( stderr, "\33[?25h" );
                             fflush( stdout );
 
                             exit(1);
@@ -6671,6 +6682,8 @@ usage:
                     }
 
                     read_pkts++;
+
+		    // printf("read_pkts : %d \t signal strength : power : %d\n", read_pkts, ri.ri_power);
 
                     wi_read_failed = 0;
                     dump_add_packet( h80211, caplen, &ri, i );
@@ -6799,7 +6812,7 @@ usage:
         }
     }
 
-    fprintf( stderr, "\33[?25h" );
+    //fprintf( stderr, "\33[?25h" );
     fflush( stdout );
 
     return( 0 );
