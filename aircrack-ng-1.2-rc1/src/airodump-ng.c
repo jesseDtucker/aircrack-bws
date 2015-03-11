@@ -1539,7 +1539,7 @@ int dump_add_packet( unsigned char *h80211, int caplen, struct rx_info *ri, int 
      * client: either type == Mgmt and SA != BSSID,
      * or FromDS == 0 and ToDS == 1 */
     
-    fprintf( stdout, "{'mac':'%02X:%02X:%02X:%02X:%02X:%02X', 'strength':%d}\n",
+    fprintf( stdout, "{\"mac\":\"%02X:%02X:%02X:%02X:%02X:%02X\", \"strength\":%d}\n",
 			st_cur->stmac[0], st_cur->stmac[1],
 			st_cur->stmac[2], st_cur->stmac[3],
 	     st_cur->stmac[4], st_cur->stmac[5], ri->ri_power );
